@@ -83,7 +83,6 @@
                   </Action>
                 </Control>
               </Group>
-              <Label resid="MyTab.TabLabel" />
             </OfficeTab>
 
           </ExtensionPoint>
