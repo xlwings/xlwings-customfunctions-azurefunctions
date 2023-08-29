@@ -5,6 +5,7 @@ from pathlib import Path
 import azure.functions as func
 import xlwings as xw
 
+import auth
 import custom_functions
 
 app = func.FunctionApp()
@@ -59,6 +60,15 @@ def custom_functions_code(req: func.HttpRequest):
 async def custom_functions_call(req: func.HttpRequest):
     """This endpoint makes the Python function calls and can be protected via auth"""
     logging.info("custom_functions_call called")
+    auth_header = req.headers.get("Authorization")
+    user, error = auth.authenticate(auth_header)
+    if not user:
+        return func.HttpResponse(
+            f"Auth Error: {error}",
+            mimetype="application/json",
+            status_code=401,
+        )
+    logging.info(f"Call made by User: {user}")
     data = req.get_json()
     rv = await xw.pro.custom_functions_call(data, custom_functions)
     return func.HttpResponse(

@@ -30,9 +30,9 @@ In the commands below, we're going to use the following names/parameters:
 - the function app: `xlwings-quickstart`
 - the resource group: `xlwings-quickstart-rg`
 - the storage account: `xlwingsquickstartsa`
-- deploy it to the region: `westeurope`
+- deploy it to the region: `northeurope`
 
-Note that you may need to use different names/parameters though.
+Note that you may want/need to use different names/parameters though.
 
 Before you begin, you'll need to login to Azure:
 
@@ -43,19 +43,19 @@ az login
 1.  Create a resource group:
 
     ```bash
-    az group create --name xlwings-quickstart-rg --location westeurope
+    az group create --name xlwings-quickstart-rg --location northeurope
     ```
 
 2.  Create storage account:
 
     ```bash
-    az storage account create --name xlwingsquickstartsa --location westeurope --resource-group xlwings-quickstart-rg --sku Standard_LRS
+    az storage account create --name xlwingsquickstartsa --location northeurope --resource-group xlwings-quickstart-rg --sku Standard_LRS
     ```
 
 3.  Create the function app:
 
     ```bash
-    az functionapp create --resource-group xlwings-quickstart-rg --consumption-plan-location westeurope --runtime python --runtime-version 3.10 --functions-version 4 --name xlwings-quickstart --os-type linux --storage-account xlwingsquickstartsa
+    az functionapp create --resource-group xlwings-quickstart-rg --consumption-plan-location northeurope --runtime python --runtime-version 3.10 --functions-version 4 --name xlwings-quickstart --os-type linux --storage-account xlwingsquickstartsa
     ```
 
 4.  Set the xlwings license key as environment variable (you can get a free trial key [here](https://www.xlwings.org/trial)):
@@ -63,6 +63,8 @@ az login
     ```bash
     az functionapp config appsettings set --name xlwings-quickstart --resource-group xlwings-quickstart-rg --settings XLWINGS_LICENSE_KEY=<YOUR_LICENSE_KEY>
     ```
+
+    Alternatively, you could also set env vars in the Azure portal, under your Function App's Configuration: `+New application setting`.
 
 5.  Set the following setting to enable the worker process to index the functions:
 
@@ -94,6 +96,8 @@ az login
             taskpane - [httpTrigger]
                 Invoke url: https://xlwings-quickstart.azurewebsites.net/api/taskpane.html
     ```
+
+    If you don't see the URLs printed, re-run the command. If you still don't see them, there's probably something wrong with your code or you may have a missing package under `requirements.txt`. Check Azure monitoring.
 
 8. On Azure portal, under Function App > Your Function App > CORS, set `Allowed Origins` to `*` if you want to be able to call the functions from Excel on the web. This step should not be required if you're only using the desktop version of Excel.
 
@@ -130,9 +134,25 @@ If you wanted to run the functions locally, add the `local.settings.json` file i
 * Change the `<Id>` in the manifest to a unique GUID for each environment (e.g., dev, prod, etc.).
 * Use a different `Functions.Namespace` in the manifest for each environment/version of the add-in. E.g., `DEV`, `MYAPP_V1`, etc. to prevent name clashes with other version of the app.
 
-## Authentication
+## Authentication with Azure AD
 
-In `function_app.py`, only `custom_functions_call()` can be authenticated, the rest of the endpoints need to allow for anonymous access as Excel isn't able to load the add-in otherwise. You can use the built-in SSO/Azure AD authentication or any other authentication mechanism, see: https://docs.xlwings.org/en/latest/pro/server/server_authentication.html#sso-azure-ad-for-excel-365
+In `function_app.py`, only `custom_functions_call()` can be authenticated, the rest of the endpoints need to allow for anonymous access as Excel isn't able to load the add-in otherwise.
+
+First, you'll need to create an app in Azure AD and optionally, you can use roles for role-based access control (RBAC). For a walk-through on how to set up Azure AD, see: https://github.com/xlwings/xlwings-server-auth-azuread
+
+* Update your manifest's `WebApplicationInfo` section with `Id` and `Resource` (bottom of the file).
+* Create the following env vars in your function app either via Azure portal: `AZUREAD_CLIENT_ID=...`, `AZUREAD_TENANT_ID=...`, `XLWINGS_REQUIRED_ROLES=xlwings.user` or command line:
+
+```bash
+az functionapp config appsettings set --name xlwings-quickstart --resource-group xlwings-quickstart-rg --settings AZUREAD_CLIENT_ID=... AZUREAD_TENANT_ID=... XLWINGS_REQUIRED_ROLES=xlwings.user
+```
+
+Since the access token is currently cached in Excel, you'll need to open the side bar of the add-in, right-click and `Reload` to get a new access token after making changes. **Note, however, that changes to Azure AD roles etc. can take 10 minutes or longer to come through!**
+
+## Monitoring / Logs
+
+In the Azure portal, go to your function app, then click on the function name, e.g., `custom-function-call`. Then click on `Monitor` in the left side bar and now on the timestamp of a specific run. Note that it takes multiple minutes for the logs to show up.
+
 
 ## Cleanup
 

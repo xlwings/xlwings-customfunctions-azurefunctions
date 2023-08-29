@@ -30,10 +30,52 @@
     </p>
     <script>
       Office.onReady(function (info) {});
+      let isRenewingToken = false;
+      let tokenLock = false;
+      let accessToken = null;
+      let tokenTimestamp = null;
 
-      // This is required for authentication and must not be deleted
+      function hasKeyExpired() {
+        if (!tokenTimestamp) {
+          return true;
+        }
+        // 55 minutes, adjust according to Azure AD token lifetime
+        const expirationTime = 55 * 60 * 1000;
+        const currentTime = Date.now();
+        return currentTime - tokenTimestamp > expirationTime;
+      }
+
+      async function renewAccessToken() {
+        console.log("Renewing access token");
+        try {
+          accessToken = await Office.auth.getAccessToken({
+            allowSignInPrompt: true,
+          });
+          accessToken = "Bearer " + accessToken;
+          tokenTimestamp = Date.now();
+        } catch (error) {
+          console.log(`Error ${error.code}: ${error.message}`);
+        } finally {
+          tokenLock = false;
+        }
+      }
+
       globalThis.getAuth = async function () {
-        return "";
+        if (!accessToken || hasKeyExpired()) {
+          if (!tokenLock) {
+            tokenLock = true;
+            isRenewingToken = true;
+            await renewAccessToken();
+
+            isRenewingToken = false;
+          } else {
+            while (isRenewingToken) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+          }
+        }
+        // console.log(accessToken);
+        return accessToken;
       };
     </script>
   </body>
