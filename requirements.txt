@@ -6,3 +6,5 @@ azure-functions==1.15.0
 xlwings==0.30.10
 pandas==2.0.2
 pyjwt[crypto]==2.6.0
+sqlalchemy[asyncio]==2.0.20
+asyncpg==0.28.0

@@ -141,11 +141,13 @@ In `function_app.py`, only `custom_functions_call()` can be authenticated, the r
 First, you'll need to create an app in Azure AD and optionally, you can use roles for role-based access control (RBAC). For a walk-through on how to set up Azure AD, see: https://github.com/xlwings/xlwings-server-auth-azuread
 
 * Update your manifest's `WebApplicationInfo` section with `Id` and `Resource` (bottom of the file).
-* Create the following env vars in your function app either via Azure portal: `AZUREAD_CLIENT_ID=...`, `AZUREAD_TENANT_ID=...`, `XLWINGS_REQUIRED_ROLES=xlwings.user` or command line:
+* Create the following env vars in your function app either via Azure portal: `AZUREAD_CLIENT_ID=...`, `AZUREAD_TENANT_ID=...`, `XLWINGS_REQUIRED_ROLES=xlwings.user`, `DB_CONNECTION_STRING=...` or command line:
 
 ```bash
-az functionapp config appsettings set --name xlwings-quickstart --resource-group xlwings-quickstart-rg --settings AZUREAD_CLIENT_ID=... AZUREAD_TENANT_ID=... XLWINGS_REQUIRED_ROLES=xlwings.user
+az functionapp config appsettings set --name xlwings-quickstart --resource-group xlwings-quickstart-rg --settings AZUREAD_CLIENT_ID=... AZUREAD_TENANT_ID=... XLWINGS_REQUIRED_ROLES=xlwings.user DB_CONNECTION_STRING=...
 ```
+
+`DB_CONNECTION_STRING` expects a SQLAlchemy connection string pointing to an AdventureWorks sample database.
 
 Since the access token is currently cached in Excel, you'll need to open the side bar of the add-in, right-click and `Reload` to get a new access token after making changes. **Note, however, that changes to Azure AD roles etc. can take 10 minutes or longer to come through!**
 

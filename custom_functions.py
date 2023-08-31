@@ -1,13 +1,17 @@
 import datetime as dt
+import os
 
 import numpy as np
 import pandas as pd
 import xlwings as xw
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 from xlwings import pro
 
+from utils import process_cursor_result
+
+
 # SAMPLE 1: Hello World
-
-
 @pro.func
 def hello(name):
     return f"Hello {name}!"
@@ -18,8 +22,6 @@ def hello(name):
 # function and its arguments. The namespace makes this function turn up as
 # NUMPY.STANDARD_NORMAL in Excel. Multi-dimensional arrays are automatically
 # spilled via Excel's native dynamic arrays, no code change required.
-
-
 @pro.func(namespace="numpy")
 @pro.arg("rows", doc="the number of rows in the returned array.")
 @pro.arg("columns", doc="the number of columns in the returned array.")
@@ -35,8 +37,6 @@ def standard_normal(rows, columns):
 # pandas DataFrame as they are always 2-dimensional by definition.
 # This sample wouldn't work for single cells and 1-dimensional ranges if
 # ndim=2 is left away
-
-
 @pro.func
 @pro.arg("values", ndim=2)
 def add_one(values):
@@ -44,8 +44,6 @@ def add_one(values):
 
 
 # SAMPLE 4: pandas DataFrame as argument and return value
-
-
 @pro.func(namespace="pandas")
 @pro.arg("df", pd.DataFrame, index=False, header=False)
 @pro.ret(index=False, header=False)
@@ -61,8 +59,6 @@ def correl(df):
 # Python by either using a decorator or by using xw.to_datetime().
 # On the other hand, when returning datetime objects, xlwings takes care of formatting
 # the cell automatically via data types.
-
-
 @pro.func(namespace="pandas")
 @pro.arg("start", dt.datetime, doc="A date-formatted cell")
 @pro.arg("end", doc="A date-formatted cell")
@@ -82,8 +78,6 @@ def random_timeseries(start, end):
 # SAMPLE 6: DateTime within pandas DataFrames
 # pandas DataFrames allow you to use parse_dates in the same way as it works with
 # pd.read_csv().
-
-
 @pro.func(namespace="pandas")
 @pro.arg("df", pd.DataFrame, parse_dates=[0])
 def timeseries_start(df):
@@ -95,10 +89,28 @@ def timeseries_start(df):
 
 
 # SAMPLE 7: Volatile functions
-# Volatile functions are calculated everytime Excel calculates something, even if none
+# Volatile functions are calculated every time Excel calculates something, even if none
 # of the cells arguments change.
-
-
 @pro.func(volatile=True)
 def last_calculated():
     return f"Last calculated: {dt.datetime.now()}"
+
+
+# SAMPLE 8: Database
+engine = create_async_engine(
+    os.environ["DB_CONNECTION_STRING"],
+    pool_pre_ping=True,
+)
+
+
+@pro.func
+async def person(limit):
+    sql = """
+    SELECT firstname, lastname, title, modifieddate
+    FROM person.person
+    ORDER BY businessentityid
+    LIMIT :limit
+    """
+    async with engine.begin() as con:
+        result = await con.execute(text(sql), {"limit": limit})
+    return process_cursor_result(result)
