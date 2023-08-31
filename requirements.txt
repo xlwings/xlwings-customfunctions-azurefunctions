@@ -3,7 +3,7 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions==1.15.0
-xlwings==0.30.10
+xlwings==0.30.11
 pandas==2.0.2
 pyjwt[crypto]==2.6.0
 sqlalchemy[asyncio]==2.0.20

@@ -6,13 +6,13 @@ import pandas as pd
 import xlwings as xw
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
-from xlwings import pro
+from xlwings import server
 
 from utils import process_cursor_result
 
 
 # SAMPLE 1: Hello World
-@pro.func
+@server.func
 def hello(name):
     return f"Hello {name}!"
 
@@ -22,9 +22,9 @@ def hello(name):
 # function and its arguments. The namespace makes this function turn up as
 # NUMPY.STANDARD_NORMAL in Excel. Multi-dimensional arrays are automatically
 # spilled via Excel's native dynamic arrays, no code change required.
-@pro.func(namespace="numpy")
-@pro.arg("rows", doc="the number of rows in the returned array.")
-@pro.arg("columns", doc="the number of columns in the returned array.")
+@server.func(namespace="numpy")
+@server.arg("rows", doc="the number of rows in the returned array.")
+@server.arg("columns", doc="the number of columns in the returned array.")
 def standard_normal(rows, columns):
     """Returns an array of standard normally distributed random numbers"""
     rng = np.random.default_rng()
@@ -37,16 +37,16 @@ def standard_normal(rows, columns):
 # pandas DataFrame as they are always 2-dimensional by definition.
 # This sample wouldn't work for single cells and 1-dimensional ranges if
 # ndim=2 is left away
-@pro.func
-@pro.arg("values", ndim=2)
+@server.func
+@server.arg("values", ndim=2)
 def add_one(values):
     return [[cell + 1 for cell in row] for row in values]
 
 
 # SAMPLE 4: pandas DataFrame as argument and return value
-@pro.func(namespace="pandas")
-@pro.arg("df", pd.DataFrame, index=False, header=False)
-@pro.ret(index=False, header=False)
+@server.func(namespace="pandas")
+@server.arg("df", pd.DataFrame, index=False, header=False)
+@server.ret(index=False, header=False)
 def correl(df):
     """Like CORREL, but it works on whole matrices instead of just 2 arrays.
     Set index and header to True if your dataset has labels
@@ -59,9 +59,9 @@ def correl(df):
 # Python by either using a decorator or by using xw.to_datetime().
 # On the other hand, when returning datetime objects, xlwings takes care of formatting
 # the cell automatically via data types.
-@pro.func(namespace="pandas")
-@pro.arg("start", dt.datetime, doc="A date-formatted cell")
-@pro.arg("end", doc="A date-formatted cell")
+@server.func(namespace="pandas")
+@server.arg("start", dt.datetime, doc="A date-formatted cell")
+@server.arg("end", doc="A date-formatted cell")
 def random_timeseries(start, end):
     # Instead of using the dt.datetime converter in the decorator, you can also convert
     # a date-formatted cell to a datetime object by using xw.to_datetime(). This is
@@ -78,8 +78,8 @@ def random_timeseries(start, end):
 # SAMPLE 6: DateTime within pandas DataFrames
 # pandas DataFrames allow you to use parse_dates in the same way as it works with
 # pd.read_csv().
-@pro.func(namespace="pandas")
-@pro.arg("df", pd.DataFrame, parse_dates=[0])
+@server.func(namespace="pandas")
+@server.arg("df", pd.DataFrame, parse_dates=[0])
 def timeseries_start(df):
     """Returns the earliest date of a timeseries. Expects the leftmost column to contain
     date-formatted cells in Excel (you could use the output of random_timeseries as
@@ -91,7 +91,7 @@ def timeseries_start(df):
 # SAMPLE 7: Volatile functions
 # Volatile functions are calculated every time Excel calculates something, even if none
 # of the cells arguments change.
-@pro.func(volatile=True)
+@server.func(volatile=True)
 def last_calculated():
     return f"Last calculated: {dt.datetime.now()}"
 
@@ -103,7 +103,7 @@ engine = create_async_engine(
 )
 
 
-@pro.func
+@server.func
 async def person(limit):
     sql = """
     SELECT firstname, lastname, title, modifieddate
