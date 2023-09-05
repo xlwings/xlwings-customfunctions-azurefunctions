@@ -100,6 +100,7 @@ def last_calculated():
 engine = create_async_engine(
     os.environ["DB_CONNECTION_STRING"],
     pool_pre_ping=True,
+    pool_size=2,
 )
 
 
