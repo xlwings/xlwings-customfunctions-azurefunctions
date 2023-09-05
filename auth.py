@@ -16,8 +16,6 @@ azuread_client_id = os.environ["AZUREAD_CLIENT_ID"]
 
 @dataclass
 class User:
-    oid: str  # A GUID representing the ID of the user in the Microsoft identity system
-    tenant_id: str  # A GUID representing the tenant that the user is signing in to
     name: str
     email: str
     roles: List
