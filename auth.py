@@ -61,13 +61,10 @@ def authenticate(access_token: str):
             issuer=issuer,
             audience=audience,
         )
-        logging.info(claims)
     except Exception:
         return None, "Couldn't validate access token"
 
     user = User(
-        oid=claims["oid"],
-        tenant_id=claims["tid"],
         name=claims["name"],
         email=claims["preferred_username"],
         roles=claims.get("roles") if claims.get("roles") else [],
