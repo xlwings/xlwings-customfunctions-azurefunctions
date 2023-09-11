@@ -14,7 +14,7 @@ from utils import process_cursor_result
 # SAMPLE 1: Hello World
 @server.func
 def hello(name):
-    return f"Hello {name}!"
+    return f"Bye {name}!"
 
 
 # SAMPLE 2: Numpy, Namespace, doc strings, dynamic arrays
