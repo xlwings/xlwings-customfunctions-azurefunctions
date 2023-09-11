@@ -7,6 +7,7 @@ import jwt
 
 # See: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
 jwks_uri = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+jwks_client = jwt.PyJWKClient(jwks_uri)
 
 
 required_roles = os.environ["XLWINGS_REQUIRED_ROLES"].split(",")
@@ -30,9 +31,8 @@ def authenticate(access_token: str):
         access_token = parts[1]
     else:
         return False, "Token has to start with Bearer"
-    jwks_client = jwt.PyJWKClient(jwks_uri)
-    key = jwks_client.get_signing_key_from_jwt(access_token)
 
+    key = jwks_client.get_signing_key_from_jwt(access_token)
     token_version = jwt.decode(access_token, options={"verify_signature": False}).get(
         "ver"
     )
