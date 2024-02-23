@@ -46,7 +46,7 @@ def custom_functions_code(req: func.HttpRequest):
         xw.pro.custom_functions_code(
             custom_functions, "/api/xlwings/custom-functions-call"
         ),
-        mimetype="text/plain",
+        mimetype="text/javascript",
     )
 
 
