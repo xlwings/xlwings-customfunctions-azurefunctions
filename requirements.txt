@@ -3,5 +3,5 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions==1.15.0
-xlwings==0.30.10
+xlwings==0.31.3
 pandas==2.0.2

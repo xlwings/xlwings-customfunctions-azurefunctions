@@ -7,8 +7,8 @@
     <!-- Load office.js and xlwings.min.js -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script
-      src="https://cdn.jsdelivr.net/gh/xlwings/xlwings@0.30.10/xlwingsjs/dist/xlwings.min.js"
-      integrity="sha384-wvwFa5Yc8yushDMrEklcwsJOMNUtDI3CrTdTLdp9g6OXBHEqD0BgTWQ3B9PWlprD"
+      src="https://cdn.jsdelivr.net/gh/xlwings/xlwings@0.31.3/xlwingsjs/dist/xlwings.min.js"
+      integrity="sha384-Nqd16myZos0iPugERQyPIzrId+lPf8dyDSBaS7hjwMlYY+DylC7yQUPY5OC4gj2G"
       crossorigin="anonymous"
     ></script>
     <!-- Bootstrap with the xlwings theme -->
@@ -35,6 +35,9 @@
       globalThis.getAuth = async function () {
         return "";
       };
+
+      // Socket.io is not supported on Azure Functions
+      globalThis.socket = null;
     </script>
   </body>
 </html>
